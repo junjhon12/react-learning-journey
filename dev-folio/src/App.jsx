@@ -9,14 +9,15 @@ const projectDatas = [
   ];
 function App() {
   const [filter, setFilter] = useState('All');
-  const filteredProjects = filter === 'All' ? projectDatas : projectDatas.filter(p => p.category == filter)
+  const filteredProjects = filter === 'All' ? projectDatas : projectDatas.filter(p => p.category === filter)
   return (
     <div>
       <Navbar/>
       <div>
-        <button type="button" value={"MERN"} onClick={() => setFilter("MERN")}>MERN</button>
-        <button type="button" value={"React"} onClick={() => setFilter("React")}>React</button>
-        <button type="button" value={"Node"} onClick={() => setFilter("Node")}>Node</button>
+        <button type="button" onClick={() => setFilter("MERN")}>MERN</button>
+        <button type="button" onClick={() => setFilter("React")}>React</button>
+        <button type="button" onClick={() => setFilter("Node")}>Node</button>
+        <button type="button" onClick={() => setFilter("All")}>All</button>
       </div>
       <main>
         {filteredProjects.map( (projectData) => (
