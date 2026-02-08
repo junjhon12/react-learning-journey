@@ -1,15 +1,18 @@
 import Navbar from './components/Navbar'
 import ProjectCard from './components/ProjectCard';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-const projectDatas = [
-    {id:1, title:"project data 1 title", description:"project data description 1", link:"#", category:"React"},
-    {id:2, title:"project data 2 title", description:"project data description 2", link:"#", category:"Node"},
-    {id:3, title:"project data 3 title", description:"project data description 3", link:"#", category:"MERN"}
-  ];
 function App() {
+  const [projects, setProjects] = useState([]);
+  useEffect(() => {
+    fetch('/projects.json')
+      .then(res => res.json())
+      .then(data => setProjects(data))
+      .catch(err => console.error("Error fetching data:", err));
+  }, []);
+
   const [filter, setFilter] = useState('All');
-  const filteredProjects = filter === 'All' ? projectDatas : projectDatas.filter(p => p.category === filter)
+  const filteredProjects = filter === 'All' ? projects : projects.filter(p => p.category === filter)
   return (
     <div>
       <Navbar/>

@@ -1,0 +1,6 @@
+[
+    {"id":1, "title":"project data 1 title", "description":"project data description 1", "link":"#", "category":"React"},
+    {"id":2, "title":"project data 2 title", "description":"project data description 2", "link":"#", "category":"Node"},
+    {"id":3, "title":"project data 3 title", "description":"project data description 3", "link":"#", "category":"MERN"}
+]
+
