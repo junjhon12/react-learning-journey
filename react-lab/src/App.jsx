@@ -1,9 +1,10 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 
 
 function App() {
   const [count, setCount] = useState(0);
   const [text, setText] = useState("");
+  const [time, setTime] = useState(0);
 
   function countIncrease() {
     setCount(count + 1);
@@ -18,7 +19,15 @@ function App() {
     const inputText = e.target.value;
     setText(inputText);
 
+    
   }
+  useEffect(() => {
+    const interval = setInterval( () => {
+      setTime(seconds => seconds + 1);
+      console.log("Tick...");
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
   // If count is 0, use 'white' (or black).
   // If count > 0, use 'green'.
   // Otherwise (negative), use 'red'.
@@ -36,6 +45,10 @@ function App() {
       <h2>Mirror</h2>
       <p>What you're typing: {text}</p>
       <input type="text" placeholder="Type here..." value={text} onChange={textInput}/>
+    </section>
+    <hr />
+    <section>
+      <h1>Timer:{time}</h1>
     </section>
     </>
   )
