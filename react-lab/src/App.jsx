@@ -1,33 +1,28 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react"
+
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
 
+  function countIncrease() {
+    setCount(count + 1);
+  }
+  function countDecrease() {
+    setCount(count - 1);
+  }
+  function countReset() {
+    setCount(0);
+  }
+  // If count is 0, use 'white' (or black).
+  // If count > 0, use 'green'.
+  // Otherwise (negative), use 'red'.
+  const countColor = count === 0 ? 'white' : count > 0 ? 'green' : 'red';
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <h1 style={{color: countColor}}>Count: {count}</h1>
+      <button onClick={countIncrease}>+1</button>
+      <button onClick={countDecrease}>-1</button>
+      <button onClick={countReset}>RESET</button>
     </>
   )
 }
