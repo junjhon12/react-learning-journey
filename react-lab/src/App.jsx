@@ -6,6 +6,8 @@ function App() {
   const [count, setCount] = useState(0);
   const [text, setText] = useState("");
   const [time, setTime] = useState(0);
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // --- THE WORKOUTS (Event Handlers) ---
   
@@ -30,6 +32,20 @@ function App() {
     setText(inputText); // Saving it to the vault
   }
 
+  const fetchIdentity = () => {
+    setLoading(true);
+    fetch("https://randomuser.me/api/")
+    .then (res => res.json())
+    .then (data =>{
+      setUser(data.results[0]);
+      setLoading(false);
+    });
+  };
+
+  useEffect( () => {
+    fetchIdentity();
+  }, []);
+
   // --- THE BACKGROUND HUSTLE (Effects) ---
   
   useEffect(() => {
@@ -50,6 +66,13 @@ function App() {
   // Clean ternary operator here. It's like a quick 'if-else' to decide the vibe.
   const countColor = count === 0 ? 'white' : count > 0 ? 'green' : 'red';
 
+  if (loading) {
+    return (
+      <div style={{padding: "20px"}}>
+          <h1>Loading System...</h1>
+      </div>
+    )
+  }
   return (
     <>
     {/* SECTION 1: THE COUNTER */}
@@ -76,6 +99,19 @@ function App() {
     {/* SECTION 3: THE CLOCK */}
     <section>
       <h1>Timer: {time}</h1>
+    </section>
+    
+    <hr/>
+
+    {/**SECTIOn 4: RANDOM IDENTITY GENRATOR */}
+    <section>
+      <div style={{border: "1px solid #ccc", padding: "10px", borderRadius: "8px"}}>
+        <h3>Identity: {user.name.first} {user.name.last}</h3>
+        <p>{user.email}</p>
+        <img src={user.picture.large} alt="User" style={{borderRadius: "50%"}}/>
+        <br />
+        <button onClick={fetchIdentity} style={{marginTop: "10px"}}>New Identity</button>
+      </div>
     </section>
     </>
   )
