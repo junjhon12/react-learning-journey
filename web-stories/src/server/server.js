@@ -38,6 +38,17 @@ app.post('/api/novels', async(req,res) => {
     }
 });
 
+app.get('/api/novels', async (req, res) => {
+    try {
+        const novels = await Novel.find();
+        console.log("Fetching novels...");
+        res.json(novels);
+    } catch (error) {
+        console.error("Error fetching novel:", error);
+        res.status(500).json({message: "Failed to fetch novel."});
+    }
+})
+
 app.listen(5000, () => {
     console.log("Server running on port: 5000");
 });
