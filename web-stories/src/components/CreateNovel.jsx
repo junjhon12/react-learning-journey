@@ -10,7 +10,7 @@ const CreateNovel = () => {
     const handleChapterChange = (event) => {
         setChapter(event.target.value);
     };
-    const autoSave = (event) => {
+    const autoSave = async (event) => {
         event.preventDefault();
         if (title.length == 0) {
             alert("Title is required.");
@@ -22,6 +22,25 @@ const CreateNovel = () => {
         }
         console.log("Uploading...", {title, chapter});
         alert(`${title} has been saved`);
+
+        try {
+            const response = await fetch('http://localhost:5000/api/novels', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json'},
+                body: JSON.stringify({title, chapter}),
+            });
+
+            const data = await response.json();
+
+            if(response.ok) {
+                alert('Server: ${data.message');
+                setTitle('');
+                setChapter('');
+            }
+        } catch (error) {
+            console.log("Error:", error);
+            alert("Server connection failed.")
+        }
     };
     return (
         <div>
