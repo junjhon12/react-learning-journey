@@ -33,7 +33,7 @@ const CreateNovel = () => {
             const data = await response.json();
 
             if(response.ok) {
-                alert('Server: ${data.message');
+                alert(`Server: ${data.message}`);
                 setTitle('');
                 setChapter('');
             }
@@ -57,7 +57,7 @@ const CreateNovel = () => {
                 <hr />
                 <h3>Preview</h3>
                 <h4>{title || "Untitled"}</h4>
-                <p style={{whitespace: 
+                <p style={{whiteSpace: 
                     'pre-wrap'
                 }}>{chapter || "Waiting on content..."}</p>    
             </form>
