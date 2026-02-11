@@ -1,64 +1,47 @@
 import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 
-// Receive props from App.jsx
-const CreateNovel = ({ novelToEdit, onEditComplete }) => {
+const CreateNovel = () => {
     const [title, setTitle] = useState('');
     const [chapter, setChapter] = useState('');
+    
+    const { id } = useParams(); // Get ID from URL
+    const navigate = useNavigate(); // Tool to change pages
 
-    // Pre-fill the form when "novelToEdit" changes
+    const isEditMode = Boolean(id); // true if we have an ID
+
+    // Fetch data ONLY if we are editing
     useEffect(() => {
-        if (novelToEdit) {
-            setTitle(novelToEdit.title);
-            setChapter(novelToEdit.chapter);
-        } else {
-            setTitle('');
-            setChapter('');
+        if (isEditMode) {
+            fetch(`http://localhost:5000/api/novels/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    setTitle(data.title);
+                    setChapter(data.chapter);
+                })
+                .catch(err => console.error("Error loading novel:", err));
         }
-    }, [novelToEdit]);
+    }, [id]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        const novelData = { title, chapter };
         
-        // LOGIC BRANCH: Are we Updating or Creating?
-        if (novelToEdit) {
-            // --- UPDATE MODE ---
-            await updateNovel();
-        } else {
-            // --- CREATE MODE ---
-            await createNovel();
-        }
-    };
+        const url = isEditMode 
+            ? `http://localhost:5000/api/novels/${id}` 
+            : 'http://localhost:5000/api/novels';
+            
+        const method = isEditMode ? 'PUT' : 'POST';
 
-    const createNovel = async () => {
         try {
-            const response = await fetch('http://localhost:5000/api/novels', {
-                method: 'POST',
+            const response = await fetch(url, {
+                method: method,
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, chapter }),
+                body: JSON.stringify(novelData),
             });
-            if (response.ok) {
-                alert("Novel Created!");
-                setTitle('');
-                setChapter('');
-                // Ideally, trigger a refresh of the list here (we'll fix that next)
-                window.location.reload(); 
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    };
 
-    const updateNovel = async () => {
-        try {
-            const response = await fetch(`http://localhost:5000/api/novels/${novelToEdit._id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ title, chapter }),
-            });
             if (response.ok) {
-                alert("Novel Updated!");
-                onEditComplete(); // Tell App we are done editing
-                window.location.reload(); // Refresh to see changes
+                navigate('/'); // Go back to Library
             }
         } catch (error) {
             console.error("Error:", error);
@@ -66,25 +49,30 @@ const CreateNovel = ({ novelToEdit, onEditComplete }) => {
     };
 
     return (
-        <div style={{ margin: '20px', padding: '20px', border: '1px solid #ccc' }}>
-            <h2>{novelToEdit ? "Edit Novel" : "Create New Novel"}</h2>
+        <div style={{ padding: '20px', border: '1px solid #ccc' }}>
+            <h2>{isEditMode ? "Edit Novel" : "Create New Novel"}</h2>
             <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'block' }}>Title:</label>
-                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} style={{ width: '100%' }} />
+                    <label>Title:</label>
+                    <input 
+                        type="text" 
+                        value={title} 
+                        onChange={(e) => setTitle(e.target.value)} 
+                        style={{ width: '100%', display: 'block' }} 
+                    />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
-                    <label style={{ display: 'block' }}>Chapter:</label>
-                    <textarea value={chapter} onChange={(e) => setChapter(e.target.value)} rows="10" style={{ width: '100%' }} />
+                    <label>Chapter:</label>
+                    <textarea 
+                        value={chapter} 
+                        onChange={(e) => setChapter(e.target.value)} 
+                        rows="10" 
+                        style={{ width: '100%', display: 'block' }} 
+                    />
                 </div>
-                <button type="submit" style={{ padding: '10px', backgroundColor: novelToEdit ? '#ffc107' : '#007bff', color: 'white', border: 'none' }}>
-                    {novelToEdit ? "Update Novel" : "Publish Novel"}
+                <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#007bff', color: 'white', border: 'none' }}>
+                    {isEditMode ? "Update" : "Publish"}
                 </button>
-                {novelToEdit && (
-                    <button type="button" onClick={onEditComplete} style={{ marginLeft: '10px', padding: '10px' }}>
-                        Cancel
-                    </button>
-                )}
             </form>
         </div>
     );

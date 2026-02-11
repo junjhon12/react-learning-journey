@@ -1,71 +1,50 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
 
-const NovelList = ({ onEdit }) => { 
+const NovelList = () => {
     const [novels, setNovels] = useState([]);
+    const navigate = useNavigate(); // 2. Initialize hook
 
+    // ... (Keep your existing useEffect, fetchNovels, and handleDelete) ...
+    // COPY PASTE your existing useEffect, fetchNovels, and handleDelete functions here
     useEffect(() => {
-        fetchNovels();
+        fetch('http://localhost:5000/api/novels')
+            .then(res => res.json())
+            .then(data => setNovels(data))
+            .catch(err => console.error("Error:", err));
     }, []);
 
-    const fetchNovels = () => {
-        fetch('http://localhost:5000/api/novels')
-            .then(response => response.json())
-            .then(data => setNovels(data))
-            .catch(error => console.error("Error fetching novels:", error));
-    };
-
     const handleDelete = async (id) => {
-        if (!window.confirm("Are you sure you want to delete this novel?")) return;
-
+        if(!window.confirm("Delete this novel?")) return;
         try {
-            const response = await fetch(`http://localhost:5000/api/novels/${id}`, {
-                method: 'DELETE',
-            });
-
-            if (response.ok) {
-                setNovels(novels.filter((novel) => novel._id !== id));
-            } else {
-                alert("Failed to delete.");
-            }
-        } catch (error) {
-            console.error("Error deleting:", error);
-            alert("Error connecting to server.");
-        }
+            await fetch(`http://localhost:5000/api/novels/${id}`, { method: 'DELETE' });
+            setNovels(novels.filter(n => n._id !== id));
+        } catch (err) { console.error(err); }
     };
-    
+
     return (
-        <div style={{margin:'0 auto'}}>
-            <h2>Novel Library</h2>
-            {novels.length === 0 ? (
-                <p>No novels found.</p>
-            ) : (
-                novels.map((novel) => (
-                    <div key={novel._id} style={{
-                        border: '1px solid #000',
-                        borderRadius: '10px',
-                        padding: '10px',
-                        marginBottom: '10px',
-                        backgroundColor: '#f9f9f9'
-                    }}>
-                        <h3 style={{margin: '0 0 10px 0'}}>{novel.title}</h3>
-                        <p style={{whiteSpace: 'pre-wrap', color:'#555'}}>
-                            {novel.chapter.substring(0, 100)}...
-                        </p>
-                        <small style={{color:'#888'}}>
-                            ID: {novel._id}
-                        </small>
-                        <button onClick={() => handleDelete(novel._id)} style={{ /* red button styles */ }}>
+        <div style={{ maxWidth: '600px', margin: '0 auto' }}>
+            <h2>📚 Novel Library</h2>
+            {novels.map((novel) => (
+                <div key={novel._id} style={{ 
+                    border: '1px solid #ddd', padding: '15px', marginBottom: '15px', borderRadius: '8px' 
+                }}>
+                    <h3>{novel.title}</h3>
+                    <p>{novel.chapter.substring(0, 100)}...</p>
+                    
+                    <button onClick={() => handleDelete(novel._id)} style={{ backgroundColor: '#ff4d4d', color: 'white', border: 'none', padding: '5px 10px', cursor: 'pointer', marginRight: '10px' }}>
                         Delete
-                        </button>
-                        <button 
-                            onClick={() => onEdit(novel)} 
-                            style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#ffc107', border: 'none', cursor: 'pointer' }}
-                        >
-                            Edit
-                        </button>
-                    </div>
-                ))
-            )}
+                    </button>
+
+                    {/* 3. Update Edit Button to Navigate */}
+                    <button 
+                        onClick={() => navigate(`/edit/${novel._id}`)} 
+                        style={{ backgroundColor: '#ffc107', border: 'none', padding: '5px 10px', cursor: 'pointer' }}
+                    >
+                        Edit
+                    </button>
+                </div>
+            ))}
         </div>
     );
 };

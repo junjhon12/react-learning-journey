@@ -95,6 +95,36 @@ app.put('/api/novels/:id', async (req, res) => {
     }
 });
 
+// GET Single Route: Fetch just one novel by ID
+app.get('/api/novels/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const novel = await Novel.findById(id);
+        if (!novel) {
+            return res.status(404).json({ message: "Novel not found" });
+        }
+        res.json(novel);
+    } catch (error) {
+        console.error("Error fetching novel:", error);
+        res.status(500).json({ message: "Failed to fetch novel" });
+    }
+});
+
+// GET Single Novel by ID
+app.get('/api/novels/:id', async (req, res) => {
+    const { id } = req.params;
+    try {
+        const novel = await Novel.findById(id);
+        if (!novel) {
+            return res.status(404).json({ message: "Novel not found" });
+        }
+        res.json(novel);
+    } catch (error) {
+        console.error("Error fetching novel:", error);
+        res.status(500).json({ message: "Failed to fetch novel" });
+    }
+});
+
 app.listen(5000, () => {
     console.log("Server running on port: 5000");
 });
