@@ -52,6 +52,25 @@ app.get('/api/novels', async (req, res) => {
     }
 })
 
+app.delete('/api/novels/:id', async (req, res) => {
+    const { id } = req.params; // Get the ID from the URL URL
+
+    try {
+        const deletedNovel = await Novel.findByIdAndDelete(id);
+        
+        if (!deletedNovel) {
+            return res.status(404).json({ message: "Novel not found" });
+        }
+
+        console.log(`Deleted novel: ${deletedNovel.title}`);
+        res.json({ message: "Novel deleted." });
+    } catch (error) {
+        console.error("Error deleting novel:", error);
+        res.status(500).json({ message: "Failed to delete novel" });
+    }
+});
+
+
 app.listen(5000, () => {
     console.log("Server running on port: 5000");
 });
