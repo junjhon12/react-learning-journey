@@ -70,6 +70,30 @@ app.delete('/api/novels/:id', async (req, res) => {
     }
 });
 
+app.put('/api/novels/:id', async (req, res) => {
+    const { id } = req.params;
+    const { title, chapter } = req.body;
+
+    try {
+        // Find the novel by ID and update it
+        // { new: true } tells Mongoose to return the UPDATED version, not the old one
+        const updatedNovel = await Novel.findByIdAndUpdate(
+            id, 
+            { title, chapter }, 
+            { new: true }
+        );
+
+        if (!updatedNovel) {
+            return res.status(404).json({ message: "Novel not found" });
+        }
+
+        console.log("Updated novel:", updatedNovel.title);
+        res.json(updatedNovel);
+    } catch (error) {
+        console.error("Error updating novel:", error);
+        res.status(500).json({ message: "Failed to update novel" });
+    }
+});
 
 app.listen(5000, () => {
     console.log("Server running on port: 5000");

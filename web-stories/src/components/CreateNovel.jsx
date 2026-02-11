@@ -1,91 +1,90 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-const CreateNovel = () => {
+// Receive props from App.jsx
+const CreateNovel = ({ novelToEdit, onEditComplete }) => {
     const [title, setTitle] = useState('');
     const [chapter, setChapter] = useState('');
 
-    const handleTitleChange = (event) => {
-        setTitle(event.target.value);
-    };
-    const handleChapterChange = (event) => {
-        setChapter(event.target.value);
+    // Pre-fill the form when "novelToEdit" changes
+    useEffect(() => {
+        if (novelToEdit) {
+            setTitle(novelToEdit.title);
+            setChapter(novelToEdit.chapter);
+        } else {
+            setTitle('');
+            setChapter('');
+        }
+    }, [novelToEdit]);
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        
+        // LOGIC BRANCH: Are we Updating or Creating?
+        if (novelToEdit) {
+            // --- UPDATE MODE ---
+            await updateNovel();
+        } else {
+            // --- CREATE MODE ---
+            await createNovel();
+        }
     };
 
-    const autoSave = async (event) => {
-        event.preventDefault(); // Prevents page reload
-        if (title.length === 0) {
-            alert("Title is required.");
-            return;
-        }
-        if (!chapter) {
-            alert("Cannot upload empty chapter.")
-            return;
-        }
-
+    const createNovel = async () => {
         try {
             const response = await fetch('http://localhost:5000/api/novels', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ title, chapter }),
             });
-
-            const data = await response.json();
-
             if (response.ok) {
-                alert(`Server: ${data.message}`);
+                alert("Novel Created!");
                 setTitle('');
                 setChapter('');
+                // Ideally, trigger a refresh of the list here (we'll fix that next)
+                window.location.reload(); 
             }
         } catch (error) {
             console.error("Error:", error);
-            alert("Server connection failed.")
+        }
+    };
+
+    const updateNovel = async () => {
+        try {
+            const response = await fetch(`http://localhost:5000/api/novels/${novelToEdit._id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ title, chapter }),
+            });
+            if (response.ok) {
+                alert("Novel Updated!");
+                onEditComplete(); // Tell App we are done editing
+                window.location.reload(); // Refresh to see changes
+            }
+        } catch (error) {
+            console.error("Error:", error);
         }
     };
 
     return (
-        <div style={{ margin: '20px 0', padding: '20px', border: '1px solid #ccc' }}>
-            <h2>Create/Edit/Upload Your Webnovel</h2>
-            <form onSubmit={autoSave}>
+        <div style={{ margin: '20px', padding: '20px', border: '1px solid #ccc' }}>
+            <h2>{novelToEdit ? "Edit Novel" : "Create New Novel"}</h2>
+            <form onSubmit={handleSubmit}>
                 <div style={{ marginBottom: '10px' }}>
-                    <label htmlFor="title" style={{ display: 'block' }}>Novel Title: </label>
-                    <input 
-                        type="text" 
-                        id="title" 
-                        value={title} 
-                        onChange={handleTitleChange}
-                        style={{ width: '100%', padding: '8px' }} 
-                    />
+                    <label style={{ display: 'block' }}>Title:</label>
+                    <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} style={{ width: '100%' }} />
                 </div>
                 <div style={{ marginBottom: '10px' }}>
-                    <label htmlFor="chapter" style={{ display: 'block' }}>Chapter content: </label>
-                    <textarea 
-                        id="chapter" 
-                        value={chapter} 
-                        onChange={handleChapterChange} 
-                        rows="10" 
-                        style={{ width: '100%', padding: '8px' }}
-                    />
+                    <label style={{ display: 'block' }}>Chapter:</label>
+                    <textarea value={chapter} onChange={(e) => setChapter(e.target.value)} rows="10" style={{ width: '100%' }} />
                 </div>
-                
-                {/* --- THIS WAS MISSING --- */}
-                <button 
-                    type="submit" 
-                    style={{ 
-                        padding: '10px 20px', 
-                        backgroundColor: '#007bff', 
-                        color: 'white', 
-                        border: 'none', 
-                        cursor: 'pointer' 
-                    }}
-                >
-                    Publish Novel
+                <button type="submit" style={{ padding: '10px', backgroundColor: novelToEdit ? '#ffc107' : '#007bff', color: 'white', border: 'none' }}>
+                    {novelToEdit ? "Update Novel" : "Publish Novel"}
                 </button>
-                {/* ------------------------ */}
-
-                <hr />
-                <h3>Preview</h3>
-                <h4>{title || "Untitled"}</h4>
-                <p style={{ whiteSpace: 'pre-wrap' }}>{chapter || "Waiting on content..."}</p>    
+                {novelToEdit && (
+                    <button type="button" onClick={onEditComplete} style={{ marginLeft: '10px', padding: '10px' }}>
+                        Cancel
+                    </button>
+                )}
             </form>
         </div>
     );
