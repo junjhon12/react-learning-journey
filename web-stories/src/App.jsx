@@ -3,6 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar'; // Adjust path if needed
 import CreateNovel from './components/CreateNovel';
 import NovelList from './components/NovelList';
+import ReadNovel from './components/ReadNovel';
 
 function App() {
   return (
@@ -19,6 +20,9 @@ function App() {
           
           {/* Edit Existing Novel (:id is a variable) */}
           <Route path="/edit/:id" element={<CreateNovel />} />
+
+          {/* Read Route */}
+          <Route path="/read/:id" element={<ReadNovel />} />
         </Routes>
       </div>
     </div>
