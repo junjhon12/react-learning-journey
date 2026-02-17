@@ -5,12 +5,13 @@ const Navbar = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
-    const userId = localStorage.getItem('userId'); // <--- 1. ADD THIS LINE
+    // 1. You MUST retrieve the userId from localStorage to use it below
+    const userId = localStorage.getItem('userId'); 
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('username');
-        localStorage.removeItem('userId');
+        localStorage.removeItem('userId'); // Clear userId on logout
         alert("Logged out!");
         navigate('/login');
         window.location.reload();
@@ -29,7 +30,7 @@ const Navbar = () => {
                             <Link to="/create" className="nav-item">Write</Link>
                             <Link to="/bookshelf" className="nav-item">Bookshelf</Link>
                             
-                            {/* 2. FIXED LINK: Added /profile/ and used Backticks */}
+                            {/* 2. FIXED: Use backticks and the correct path /profile/ */}
                             <Link to={`/profile/${userId}`} className="nav-item">My Profile</Link>
                             
                             <span className="user-badge">{username}</span>

@@ -11,11 +11,15 @@ import rateLimit from 'express-rate-limit';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const app = express();
-app.use(cors());
 app.use(express.json());
-app.use(cors({
-    origin: 'https://your-app-name.vercel.app' 
-}));
+app.use(cors());
+
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 login attempts per window
+    message: { message: "Too many login attempts, please try again after 15 minutes." }
+});
+app.use('/api/auth/login', loginLimiter);
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log(`MongoDB Atlas : connected`))
@@ -25,7 +29,7 @@ mongoose.connect(process.env.MONGO_URI)
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    savedBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }] // <--- ADD THIS
+    savedBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book', default: [] }] // Add default: []
 });
 const User = mongoose.model('User', userSchema);
 
@@ -69,11 +73,7 @@ const commentSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 const Comment = mongoose.model('Comment', commentSchema);
-const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 10, // Limit each IP to 10 login attempts per window
-    message: { message: "Too many login attempts, please try again after 15 minutes." }
-});
+
 
 // --- AUTH ROUTES ---
 app.post('/api/auth/register', async (req, res) => {
@@ -88,7 +88,7 @@ app.post('/api/auth/register', async (req, res) => {
     } catch (error) { res.status(500).json({ message: "Error registering" }); }
 });
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
     const { username, password } = req.body;
     try {
         const user = await User.findOne({ username });
@@ -356,6 +356,18 @@ app.post('/api/ai/critique', authenticateToken, async (req, res) => {
     }
 });
 
-app.use('/api/auth/login', loginLimiter);
 
+// Pass loginLimiter directly into the post request
+app.post('/api/auth/login', loginLimiter, async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        const user = await User.findOne({ username });
+        if (!user || !(await bcrypt.compare(password, user.password))) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+        // Ensure you are sending the userId back so the frontend can store it
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "mysecretkey", { expiresIn: "1h" });
+        res.json({ token, username: user.username, userId: user._id });
+    } catch (error) { res.status(500).json({ message: "Error logging in" }); }
+});
 app.listen(5000, () => console.log("Server running on port 5000"));

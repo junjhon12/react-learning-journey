@@ -1,55 +1,77 @@
-import React, { useEffect, useState, useRef } from 'react'; // 1. Add useRef
-import { useParams, Link } from 'react-router-dom';
-import CommentsSection from './CommentsSection';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-const ReadChapter = () => {
-    const { id } = useParams(); 
-    const [chapter, setChapter] = useState(null);
-    const hasCountedView = useRef(false); // 2. Create the guard
+const BookList = () => {
+    const [books, setBooks] = useState([]);
+    const [sortBy, setSortBy] = useState('newest'); // 'newest' or 'popular'
+    const navigate = useNavigate();
 
     useEffect(() => {
-        fetch(`http://localhost:5000/api/chapters/${id}`)
+        fetch('http://localhost:5000/api/books')
             .then(res => res.json())
-            .then(data => {
-                setChapter(data);
-                
-                // 3. Only count the view if we haven't already for this ID
-                if (data.book?._id && !hasCountedView.current) {
-                    fetch(`http://localhost:5000/api/books/${data.book._id}/view`, { method: 'POST' });
-                    hasCountedView.current = true; // Set guard to true
-                }
-            })
-            .catch(err => console.error("Error loading chapter:", err));
+            .then(data => setBooks(data))
+            .catch(err => console.error("Error fetching books:", err));
+    }, []);
 
-        // Reset the guard if the user switches to a DIFFERENT chapter
-        return () => {
-            hasCountedView.current = false;
-        };
-    }, [id]);
+    // Sort logic
+    const sortedBooks = [...books].sort((a, b) => {
+        if (sortBy === 'popular') return b.views - a.views;
+        return new Date(b.createdAt) - new Date(a.createdAt);
+    });
 
-    if (!chapter) return <div className="container text-center mt-4">Loading...</div>;
+    if (!books.length) return <div className="container text-center mt-4">No stories found. Be the first to write one!</div>;
 
     return (
-        <div className="container" style={{ maxWidth: '800px', padding: '40px 20px' }}>
-            <div className="card">
-                <Link to={`/books/${chapter.book?._id}`} className="text-muted" style={{ fontSize: '0.9rem' }}>
-                    ← Back to Table of Contents
-                </Link>
-
-                <h1 style={{ textAlign: 'center', fontSize: '3rem', marginTop: '20px', fontFamily: 'Georgia, serif', borderBottom: '1px solid #30363d', paddingBottom: '20px' }}>
-                    {chapter.title}
-                </h1>
+        <div className="container">
+            <div className="flex-between mb-4">
+                <h1 style={{ margin: 0 }}>Library</h1>
                 
-                <div 
-                    className="story-content"
-                    style={{ fontSize: '1.25rem', lineHeight: '1.8', fontFamily: 'Georgia, serif', color: '#c9d1d9', marginTop: '30px' }}
-                    dangerouslySetInnerHTML={{ __html: chapter.content }} 
-                />
+                {/* Sorting Toggle */}
+                <div className="btn-group">
+                    <button 
+                        onClick={() => setSortBy('newest')} 
+                        className={`btn ${sortBy === 'newest' ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{ borderTopRightRadius: 0, borderBottomRightRadius: 0 }}
+                    >
+                        Newest
+                    </button>
+                    <button 
+                        onClick={() => setSortBy('popular')} 
+                        className={`btn ${sortBy === 'popular' ? 'btn-primary' : 'btn-secondary'}`}
+                        style={{ borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }}
+                    >
+                        Most Popular
+                    </button>
+                </div>
             </div>
 
-            <CommentsSection chapterId={id} />
+            <div className="grid">
+                {sortedBooks.map(book => (
+                    <div key={book._id} className="card flex-column" style={{ justifyContent: 'space-between' }}>
+                        <div>
+                            <div className="flex-between">
+                                <span className="text-muted" style={{ fontSize: '0.8rem' }}>
+                                    By {book.author?.username || 'Unknown'}
+                                </span>
+                                <span style={{ fontSize: '0.85rem' }}>👁️ {book.views || 0}</span>
+                            </div>
+                            <h3 style={{ margin: '10px 0', fontSize: '1.4rem' }}>{book.title}</h3>
+                            <p className="text-muted" style={{ fontSize: '0.9rem', marginBottom: '20px' }}>
+                                {book.description?.substring(0, 100)}...
+                            </p>
+                        </div>
+                        
+                        <button 
+                            onClick={() => navigate(`/books/${book._id}`)} 
+                            className="btn btn-primary btn-block"
+                        >
+                            Read Story
+                        </button>
+                    </div>
+                ))}
+            </div>
         </div>
     );
 };
 
-export default ReadChapter;
+export default BookList;
