@@ -7,11 +7,15 @@ import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { GoogleGenerativeAI } from "@google/generative-ai"; 
+import rateLimit from 'express-rate-limit';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const app = express();
 app.use(cors());
 app.use(express.json());
+app.use(cors({
+    origin: 'https://your-app-name.vercel.app' 
+}));
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log(`MongoDB Atlas : connected`))
@@ -65,6 +69,11 @@ const commentSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now }
 });
 const Comment = mongoose.model('Comment', commentSchema);
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 login attempts per window
+    message: { message: "Too many login attempts, please try again after 15 minutes." }
+});
 
 // --- AUTH ROUTES ---
 app.post('/api/auth/register', async (req, res) => {
@@ -346,5 +355,7 @@ app.post('/api/ai/critique', authenticateToken, async (req, res) => {
         res.status(500).json({ message: "The assistant is currently unavailable." });
     }
 });
+
+app.use('/api/auth/login', loginLimiter);
 
 app.listen(5000, () => console.log("Server running on port 5000"));
