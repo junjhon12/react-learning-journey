@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 
 const WriteChapter = () => {
     const { bookId, chapterId } = useParams(); 
@@ -53,7 +55,7 @@ const WriteChapter = () => {
     };
 
     return (
-        <div className="container" style={{ maxWidth: '800px' }}>
+        <div className="container" style={{ maxWidth: '900px' }}>
             <div className="card">
                 <h2 className="mb-4">{isEditMode ? "Edit Chapter" : "Write New Chapter"}</h2>
                 <form onSubmit={handleSubmit}>
@@ -61,17 +63,20 @@ const WriteChapter = () => {
                         <label>Chapter Title</label>
                         <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="Chapter 1: The Beginning" />
                     </div>
-                    <div>
+                    
+                    <div style={{ marginBottom: '20px' }}>
                         <label>Story Content</label>
-                        <textarea 
-                            value={content} 
-                            onChange={(e) => setContent(e.target.value)} 
-                            rows="20" 
-                            required 
-                            style={{ fontFamily: 'Georgia, serif', lineHeight: '1.6', fontSize: '1.1rem' }}
-                            placeholder="Once upon a time..."
-                        />
+                        {/* 3. The Rich Text Editor */}
+                        <div style={{ backgroundColor: '#fff', color: '#000', borderRadius: '4px' }}>
+                            <ReactQuill 
+                                theme="snow" 
+                                value={content} 
+                                onChange={setContent} 
+                                style={{ height: '300px', marginBottom: '50px' }} // Height + buffer for toolbar
+                            />
+                        </div>
                     </div>
+
                     <div className="flex-between">
                         <button type="submit" className="btn btn-primary">{isEditMode ? "Update" : "Publish"}</button>
                         <button type="button" onClick={() => navigate(-1)} className="btn btn-secondary">Cancel</button>

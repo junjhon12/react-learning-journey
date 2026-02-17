@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Bookshelf = () => {
     const [books, setBooks] = useState([]);
@@ -22,22 +22,32 @@ const Bookshelf = () => {
     }, [navigate]);
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-            <h2 style={{ borderBottom: '2px solid #ff4d4d', paddingBottom: '10px' }}>
-                ❤️ My Bookshelf
-            </h2>
+        <div className="container">
+            <div className="flex-between mb-4">
+                <h2>❤️ My Bookshelf</h2>
+                <span className="text-muted">{books.length} Saved</span>
+            </div>
 
             {books.length === 0 ? (
-                <p>You haven't saved any books yet. Go explore the library!</p>
+                <div style={{ textAlign: 'center', padding: '40px' }}>
+                    <h3>Your shelf is empty 🕸️</h3>
+                    <p className="text-muted">
+                        Go to the <Link to="/">Library</Link> and click the ❤️ button to save books here.
+                    </p>
+                </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '20px', marginTop: '20px' }}>
+                <div className="grid">
                     {books.map(book => (
-                        <div key={book._id} style={{ border: '1px solid #ddd', borderRadius: '8px', padding: '15px', backgroundColor: '#fff' }}>
-                            <h3 style={{ margin: '0 0 10px 0', fontSize: '1.2rem' }}>{book.title}</h3>
-                            <small style={{ color: '#888' }}>By {book.author?.username}</small>
+                        <div key={book._id} className="card">
+                            <h3 style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{book.title}</h3>
+                            
+                            <div className="text-muted mb-4">
+                                By {book.author?.username || "Unknown"}
+                            </div>
+
                             <button 
                                 onClick={() => navigate(`/books/${book._id}`)}
-                                style={{ width: '100%', padding: '8px', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer', marginTop: '10px' }}
+                                className="btn btn-primary btn-block"
                             >
                                 Read
                             </button>

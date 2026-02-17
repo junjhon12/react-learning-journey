@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import CommentsSection from './CommentsSection'; // 1. Import it
+import CommentsSection from './CommentsSection';
 
 const ReadChapter = () => {
     const { id } = useParams(); 
@@ -13,32 +13,29 @@ const ReadChapter = () => {
             .catch(err => console.error("Error loading chapter:", err));
     }, [id]);
 
-    if (!chapter) return <div style={{ textAlign: 'center', marginTop: '50px' }}>Loading...</div>;
+    if (!chapter) return <div className="container text-center mt-4">Loading...</div>;
 
     return (
-        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px' }}>
-            {/* ... (Keep your Back Link, Title, Content, etc.) ... */}
-            <Link to={`/books/${chapter.book?._id}`} style={{ textDecoration: 'none', color: '#666', fontSize: '0.9rem' }}>
-                ← Back to Table of Contents
-            </Link>
+        <div className="container" style={{ maxWidth: '800px', padding: '40px 20px' }}>
+            <div className="card">
+                <Link to={`/books/${chapter.book?._id}`} className="text-muted" style={{ fontSize: '0.9rem' }}>
+                    ← Back to Table of Contents
+                </Link>
 
-            <h1 style={{ textAlign: 'center', fontSize: '3rem', marginTop: '20px', fontFamily: 'Georgia, serif' }}>
-                {chapter.title}
-            </h1>
-            
-            <hr style={{ border: '0', borderTop: '1px solid #eee', margin: '40px 0' }} />
-
-            <div style={{ 
-                whiteSpace: 'pre-wrap', 
-                fontSize: '1.25rem', 
-                lineHeight: '1.8', 
-                fontFamily: 'Georgia, serif', 
-                color: '#333' 
-            }}>
-                {chapter.content}
+                <h1 style={{ textAlign: 'center', fontSize: '3rem', marginTop: '20px', fontFamily: 'Georgia, serif', borderBottom: '1px solid #30363d', paddingBottom: '20px' }}>
+                    {chapter.title}
+                </h1>
+                
+                {/* IMPORTANT: We use 'dangerouslySetInnerHTML' so the 
+                   <b>Bold</b> and <i>Italics</i> actually show up!
+                */}
+                <div 
+                    className="story-content"
+                    style={{ fontSize: '1.25rem', lineHeight: '1.8', fontFamily: 'Georgia, serif', color: '#c9d1d9', marginTop: '30px' }}
+                    dangerouslySetInnerHTML={{ __html: chapter.content }} 
+                />
             </div>
 
-            {/* 2. Add the Comments Section Here */}
             <CommentsSection chapterId={id} />
         </div>
     );
