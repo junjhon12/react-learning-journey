@@ -53,6 +53,15 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+// --- COMMENT MODEL ---
+const commentSchema = new mongoose.Schema({
+    content: { type: String, required: true },
+    author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    chapter: { type: mongoose.Schema.Types.ObjectId, ref: 'Chapter' },
+    createdAt: { type: Date, default: Date.now }
+});
+const Comment = mongoose.model('Comment', commentSchema);
+
 // --- AUTH ROUTES ---
 app.post('/api/auth/register', async (req, res) => {
     const { username, password } = req.body;
@@ -170,6 +179,50 @@ app.delete('/api/chapters/:id', authenticateToken, async (req, res) => {
         await Chapter.findByIdAndDelete(req.params.id);
         res.json({ message: "Chapter deleted" });
     } catch (error) { res.status(500).json({ message: "Error deleting chapter" }); }
+});
+
+// --- COMMENT ROUTES ---
+
+// GET Comments for a specific Chapter
+app.get('/api/chapters/:chapterId/comments', async (req, res) => {
+    try {
+        const comments = await Comment.find({ chapter: req.params.chapterId })
+            .populate('author', 'username') // Get the username, not just the ID
+            .sort({ createdAt: -1 }); // Newest comments first
+        res.json(comments);
+    } catch (error) { res.status(500).json({ message: "Error fetching comments" }); }
+});
+
+// POST a new Comment (Auth Required)
+app.post('/api/chapters/:chapterId/comments', authenticateToken, async (req, res) => {
+    try {
+        const newComment = new Comment({
+            content: req.body.content,
+            author: req.user.id,
+            chapter: req.params.chapterId
+        });
+        await newComment.save();
+
+        // Populate the author so we can display the username immediately
+        const populatedComment = await newComment.populate('author', 'username');
+        res.status(201).json(populatedComment);
+    } catch (error) { res.status(500).json({ message: "Error posting comment" }); }
+});
+
+// DELETE a Comment (Only the author can delete)
+app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
+    try {
+        const comment = await Comment.findById(req.params.id);
+        if (!comment) return res.status(404).json({ message: "Comment not found" });
+
+        // Check if the user trying to delete is the author
+        if (comment.author.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You can only delete your own comments!" });
+        }
+
+        await Comment.findByIdAndDelete(req.params.id);
+        res.json({ message: "Comment deleted" });
+    } catch (error) { res.status(500).json({ message: "Error deleting comment" }); }
 });
 
 app.listen(5000, () => console.log("Server running on port 5000"));
