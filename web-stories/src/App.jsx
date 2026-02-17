@@ -4,6 +4,8 @@ import Navbar from './components/Navbar'; // Adjust path if needed
 import CreateNovel from './components/CreateNovel';
 import NovelList from './components/NovelList';
 import ReadNovel from './components/ReadNovel';
+import Register from './components/Register';
+import Login from './components/Login';
 
 function App() {
   return (
@@ -23,6 +25,12 @@ function App() {
 
           {/* Read Route */}
           <Route path="/read/:id" element={<ReadNovel />} />
+
+          {/* login Route */}
+          <Route path="/login" element={<Login />} />
+          
+          {/* Register Route */}
+          <Route path="/register" element={<Register />} />
         </Routes>
       </div>
     </div>

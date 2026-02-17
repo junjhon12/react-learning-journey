@@ -5,10 +5,56 @@ import express from 'express';
 import cors from 'cors';
 import mongoose from 'mongoose';
 
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+
 const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// 1. REGISTER (Create new user)
+app.post('/api/auth/register', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        // Check if user exists
+        const existingUser = await User.findOne({ username });
+        if (existingUser) return res.status(400).json({ message: "User already exists" });
+
+        // Hash password (encrypt it)
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Save user
+        const newUser = new User({ username, password: hashedPassword });
+        await newUser.save();
+
+        res.status(201).json({ message: "User created! Please login." });
+    } catch (error) {
+        res.status(500).json({ message: "Error registering user" });
+    }
+});
+
+// 2. LOGIN (Get Token)
+app.post('/api/auth/login', async (req, res) => {
+    const { username, password } = req.body;
+    try {
+        // Find user
+        const user = await User.findOne({ username });
+        if (!user) return res.status(400).json({ message: "User not found" });
+
+        // Check password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
+
+        // Create Token (The "ID Card")
+        // 'SECRET_KEY' should ideally be in .env, but we'll use a string for now
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "mysecretkey", { expiresIn: "1h" });
+
+        res.json({ token, username: user.username });
+    } catch (error) {
+        res.status(500).json({ message: "Error logging in" });
+    }
+});
 
 mongoose.connect(process.env.MONGO_URI)
     .then(() => console.log(`MongoDB Atlas : connected`))
@@ -21,6 +67,13 @@ const novelSchema = new mongoose.Schema({
 });
 
 const Novel =mongoose.model(`Novel`, novelSchema);
+
+// --- User Model ---
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
+    password: { type: String, required: true }
+});
+const User = mongoose.model('User', userSchema);
 
 app.post('/api/novels', async(req,res) => {
     const {title, chapter} = req.body;
