@@ -179,7 +179,6 @@ app.delete('/api/chapters/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ message: "You can only delete your own chapters!" });
         }
         await Chapter.findByIdAndDelete(req.params.id);
-        res.json({ message: "Chapter deleted" });
     } catch (error) { res.status(500).json({ message: "Error deleting chapter" }); }
 });
 
@@ -214,7 +213,6 @@ app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
             return res.status(403).json({ message: "You can only delete your own comments!" });
         }
         await Comment.findByIdAndDelete(req.params.id);
-        res.json({ message: "Comment deleted" });
     } catch (error) { res.status(500).json({ message: "Error deleting comment" }); }
 });
 
@@ -235,11 +233,9 @@ app.post('/api/books/:id/save', authenticateToken, async (req, res) => {
         if (user.savedBooks.includes(bookId)) {
             user.savedBooks.pull(bookId);
             await user.save();
-            res.json({ message: "Book removed from shelf", isSaved: false });
         } else {
             user.savedBooks.push(bookId);
             await user.save();
-            res.json({ message: "Book added to shelf", isSaved: true });
         }
     } catch (error) { res.status(500).json({ message: "Error updating bookshelf" }); }
 });
@@ -257,7 +253,6 @@ app.get('/api/bookshelf', authenticateToken, async (req, res) => {
 app.post('/api/books/:id/view', async (req, res) => {
     try {
         await Book.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
-        res.json({ message: "View counted" });
     } catch (error) { res.status(500).json({ message: "Error" }); }
 });
 
@@ -302,5 +297,32 @@ app.post('/api/ai/critique', authenticateToken, async (req, res) => {
     }
 });
 
+//
+// DELETE Book (and all its Chapters + Comments)
+app.delete('/api/books/:id', authenticateToken, async (req, res) => {
+    try {
+        const book = await Book.findById(req.params.id);
+        if (!book) return res.status(404).json({ message: "Book not found" });
+
+        // 1. Check Ownership
+        if (book.author.toString() !== req.user.id) {
+            return res.status(403).json({ message: "You can only delete your own books!" });
+        }
+
+        // 2. Find all chapters to get their IDs
+        const chapters = await Chapter.find({ book: book._id });
+        const chapterIds = chapters.map(c => c._id);
+
+        // 3. Cascade Delete: Remove Comments first, then Chapters
+        await Comment.deleteMany({ chapter: { $in: chapterIds } });
+        await Chapter.deleteMany({ book: book._id });
+
+        // 4. Finally, Delete the Book
+        await Book.findByIdAndDelete(req.params.id);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error deleting book" });
+    }
+});
 // --- START SERVER ---
 app.listen(5000, () => console.log("Server running on port 5000"));
