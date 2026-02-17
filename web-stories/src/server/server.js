@@ -18,7 +18,8 @@ mongoose.connect(process.env.MONGO_URI)
 // --- USER MODEL ---
 const userSchema = new mongoose.Schema({
     username: { type: String, required: true, unique: true },
-    password: { type: String, required: true }
+    password: { type: String, required: true },
+    savedBooks: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Book' }] // <--- ADD THIS
 });
 const User = mongoose.model('User', userSchema);
 
@@ -93,8 +94,10 @@ app.post('/api/auth/login', async (req, res) => {
 app.get('/api/books', async (req, res) => {
     try {
         const { author } = req.query; // Look for ?author=ID in the URL
-        const filter = author ? { author } : {}; // If author exists, filter by it. If not, get all.
-        
+
+        // If author exists, filter by it. If not, get all.
+        const filter = author ? { author } : {}; 
+
         const books = await Book.find(filter).populate('author', 'username');
         res.json(books);
     } catch (error) { res.status(500).json({ message: "Error fetching books" }); }
@@ -238,6 +241,39 @@ app.get('/api/users/:id', async (req, res) => {
         if (!user) return res.status(404).json({ message: "User not found" });
         res.json(user);
     } catch (error) { res.status(500).json({ message: "Error fetching user" }); }
+});
+
+// --- BOOKSHELF ROUTES ---
+
+// Toggle Save/Unsave Book
+app.post('/api/books/:id/save', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id);
+        const bookId = req.params.id;
+
+        // Check if book is already saved
+        if (user.savedBooks.includes(bookId)) {
+            user.savedBooks.pull(bookId); // Remove it
+            await user.save();
+            res.json({ message: "Book removed from shelf", isSaved: false });
+        } else {
+            user.savedBooks.push(bookId); // Add it
+            await user.save();
+            res.json({ message: "Book added to shelf", isSaved: true });
+        }
+    } catch (error) { res.status(500).json({ message: "Error updating bookshelf" }); }
+});
+
+// Get My Bookshelf
+app.get('/api/bookshelf', authenticateToken, async (req, res) => {
+    try {
+        // Find the user and ONLY get their savedBooks (populated with details)
+        const user = await User.findById(req.user.id).populate({
+            path: 'savedBooks',
+            populate: { path: 'author', select: 'username' } // Nested populate to get author names too
+        });
+        res.json(user.savedBooks);
+    } catch (error) { res.status(500).json({ message: "Error fetching bookshelf" }); }
 });
 
 app.listen(5000, () => console.log("Server running on port 5000"));

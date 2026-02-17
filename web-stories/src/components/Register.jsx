@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Register = () => {
     const [username, setUsername] = useState('');
@@ -14,36 +14,36 @@ const Register = () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password }),
             });
-            
             const data = await response.json();
             
             if (response.ok) {
                 alert("Registration successful! Please login.");
-                navigate('/login'); // Send them to the login page
+                navigate('/login'); 
             } else {
                 alert(data.message);
             }
-        } catch (error) {
-            console.error("Error:", error);
-        }
+        } catch (error) { console.error("Error:", error); }
     };
 
     return (
-        <div style={{ maxWidth: '400px', margin: '50px auto', padding: '20px', border: '1px solid #ccc' }}>
-            <h2>Create Account</h2>
-            <form onSubmit={handleRegister}>
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block' }}>Username:</label>
-                    <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} style={{ width: '100%', padding: '8px' }} />
-                </div>
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block' }}>Password:</label>
-                    <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} style={{ width: '100%', padding: '8px' }} />
-                </div>
-                <button type="submit" style={{ width: '100%', padding: '10px', backgroundColor: '#28a745', color: 'white', border: 'none' }}>
-                    Sign Up
-                </button>
-            </form>
+        <div className="container" style={{ maxWidth: '400px', marginTop: '60px' }}>
+            <div className="card">
+                <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>Join WebStories 🚀</h2>
+                <form onSubmit={handleRegister}>
+                    <div>
+                        <label>Username</label>
+                        <input type="text" value={username} onChange={(e) => setUsername(e.target.value)} placeholder="Choose a username" />
+                    </div>
+                    <div>
+                        <label>Password</label>
+                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Choose a password" />
+                    </div>
+                    <button type="submit" className="btn btn-primary btn-block">Sign Up</button>
+                </form>
+                <p className="text-muted" style={{ textAlign: 'center', marginTop: '20px' }}>
+                    Already have an account? <Link to="/login">Login</Link>
+                </p>
+            </div>
         </div>
     );
 };

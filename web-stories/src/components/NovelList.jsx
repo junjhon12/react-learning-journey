@@ -16,20 +16,31 @@ const NovelList = () => {
     }, []);
 
     const handleDelete = async (id) => {
-        if(!window.confirm("Are you sure?")) return;
-        
+        // 1. Ask for confirmation FIRST
+        if(!window.confirm("Are you sure you want to delete this novel?")) return;
+
+        // 2. Get Token
+        const token = localStorage.getItem('token');
+
         try {
+            // 3. Send Request with Token
             const response = await fetch(`http://localhost:5000/api/novels/${id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: {
+                    'Authorization': `Bearer ${token}` 
+                }
             });
 
             if (response.ok) {
+                // 4. Update UI
                 setNovels(novels.filter(n => n._id !== id));
             } else {
-                alert("You are not allowed to delete this novel.");
+                alert("Failed to delete. You might not have permission.");
             }
-        } catch (err) { console.error(err); }
+        } catch (err) { 
+            console.error(err); 
+            alert("Error connecting to server");
+        }
     };
 
     return (

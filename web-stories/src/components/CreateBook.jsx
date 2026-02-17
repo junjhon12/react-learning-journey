@@ -6,7 +6,6 @@ const CreateBook = () => {
     const [description, setDescription] = useState('');
     const navigate = useNavigate();
 
-    // Security Check
     useEffect(() => {
         if (!localStorage.getItem('token')) {
             alert("Please login first!");
@@ -29,43 +28,32 @@ const CreateBook = () => {
             });
 
             if (response.ok) {
-                alert("Book Created!");
-                navigate('/'); // Go back to Library
+                navigate('/'); 
             } else {
                 alert("Failed to create book");
             }
-        } catch (error) {
-            console.error("Error:", error);
-        }
+        } catch (error) { console.error("Error:", error); }
     };
 
     return (
-        <div style={{ maxWidth: '600px', margin: '20px auto', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-            <h2>Create New Book</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Book Title:</label>
-                    <input 
-                        type="text" 
-                        value={title} 
-                        onChange={(e) => setTitle(e.target.value)} 
-                        required
-                        style={{ width: '100%', padding: '8px', fontSize: '1rem' }} 
-                    />
-                </div>
-                <div style={{ marginBottom: '15px' }}>
-                    <label style={{ display: 'block', marginBottom: '5px' }}>Description (The "Back of the Book"):</label>
-                    <textarea 
-                        value={description} 
-                        onChange={(e) => setDescription(e.target.value)} 
-                        rows="4" 
-                        style={{ width: '100%', padding: '8px', fontSize: '1rem' }} 
-                    />
-                </div>
-                <button type="submit" style={{ padding: '10px 20px', backgroundColor: '#28a745', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                    Create Book Jacket
-                </button>
-            </form>
+        <div className="container" style={{ maxWidth: '600px' }}>
+            <div className="card">
+                <h2 className="mb-4">Create New Book</h2>
+                <form onSubmit={handleSubmit}>
+                    <div>
+                        <label>Book Title</label>
+                        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required placeholder="e.g. The Martian" />
+                    </div>
+                    <div>
+                        <label>Description</label>
+                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows="5" placeholder="What is this story about?" />
+                    </div>
+                    <div className="flex-between">
+                        <button type="submit" className="btn btn-primary">Create Jacket</button>
+                        <button type="button" onClick={() => navigate('/')} className="btn btn-secondary">Cancel</button>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };

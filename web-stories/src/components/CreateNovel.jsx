@@ -11,7 +11,7 @@ const CreateNovel = () => {
 
     // 1. Redirect if not logged in
     useEffect(() => {
-        const token = localStorage.getItem('token'); // Fixed typo here
+        const token = localStorage.getItem('token');
         if (!token) {
             alert("You must be logged in to write a story!");
             navigate('/login');
@@ -49,7 +49,7 @@ const CreateNovel = () => {
                 method: method,
                 headers: { 
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}` 
+                    'Authorization': `Bearer ${token}` // <--- Authorization Header Added Here
                 },
                 body: JSON.stringify(novelData),
             });

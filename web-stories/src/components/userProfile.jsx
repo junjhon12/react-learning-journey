@@ -15,7 +15,7 @@ const UserProfile = () => {
             .then(data => setUser(data))
             .catch(err => console.error(err));
 
-        // 2. Fetch Books by this Author
+        // 2. Fetch Books by this Author (using the new filter)
         fetch(`http://localhost:5000/api/books?author=${userId}`)
             .then(res => res.json())
             .then(data => setBooks(data))
@@ -38,8 +38,7 @@ const UserProfile = () => {
             }}>
                 <h1 style={{ margin: 0 }}>{user.username}</h1>
                 <p style={{ color: '#888' }}>
-                    Member since {new Date(user._id.getTimestamp ? user._id.getTimestamp() : Date.now()).toLocaleDateString()}
-                    {/* Note: In a real app, use a proper 'createdAt' field, but this is a MongoDB trick for now */}
+                    Member since {new Date(parseInt(user._id.substring(0, 8), 16) * 1000).toLocaleDateString()}
                 </p>
             </div>
 

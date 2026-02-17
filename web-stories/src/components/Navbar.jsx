@@ -3,7 +3,6 @@ import { Link, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    // Check if token exists in localStorage
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
 
@@ -12,45 +11,44 @@ const Navbar = () => {
         localStorage.removeItem('username');
         alert("Logged out!");
         navigate('/login');
-        window.location.reload(); // Refresh to update UI
+        window.location.reload();
     };
+
     return (
-        <nav style={styles.nav}>
-            <h1 style={styles.logo}>📖 WebStories</h1>
-            <div style={styles.links}>
-                <Link to="/" style={styles.link}>Library</Link>
+        <nav className="navbar">
+            <div className="container flex-between">
+                <Link to="/" className="logo">📖 WebStories</Link>
                 
-                {/* Show different links based on login status */}
-                {token ? (
-                    <>
-                        <Link to="/create" style={styles.link}>Create Book</Link>
-                        <span style={{color: '#aaa', marginLeft: '10px'}}>Hello, {username}</span>
-                        <button onClick={handleLogout} style={styles.logoutBtn}>Logout</button>
-                    </>
-                ) : (
-                    <>
-                        <Link to="/login" style={styles.link}>Login</Link>
-                        <Link to="/register" style={styles.link}>Register</Link>
-                    </>
-                )}
+                <div className="nav-links">
+                    <Link to="/" className="nav-item">Library</Link>
+                    
+                    {token ? (
+                        <>
+                            <Link to="/create" className="nav-item">Write</Link>
+                            <Link to="/bookshelf" className="nav-item">Bookshelf</Link>
+                            <span className="user-badge">{username}</span>
+                            <button onClick={handleLogout} className="btn btn-danger" style={{marginLeft: '10px'}}>Logout</button>
+                        </>
+                    ) : (
+                        <>
+                            <Link to="/login" className="nav-item">Login</Link>
+                            <Link to="/register" className="btn btn-primary">Get Started</Link>
+                        </>
+                    )}
+                </div>
             </div>
+            
+            {/* Styles specific to Navbar */}
+            <style>{`
+                .navbar { background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 10px 0; }
+                .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; }
+                .nav-links { display: flex; align-items: center; gap: 20px; }
+                .nav-item { color: var(--text-muted); font-weight: 500; }
+                .nav-item:hover { color: var(--text-main); }
+                .user-badge { background: #21262d; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--border-color); }
+            `}</style>
         </nav>
     );
-};
-
-const styles = {
-    nav: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        padding: '10px 20px',
-        backgroundColor: '#333',
-        color: 'white',
-        marginBottom: '20px',
-    },
-    logo: { margin: '0 10px 0 0', fontSize: '1.5rem' },
-    links: { display: 'flex', gap: '20px' },
-    link: { color: 'white', textDecoration: 'none', fontSize: '1.2rem' }
 };
 
 export default Navbar;
