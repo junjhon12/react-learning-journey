@@ -5,6 +5,9 @@ const NovelList = () => {
     const [novels, setNovels] = useState([]);
     const navigate = useNavigate(); // 2. Initialize hook
 
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+
     // ... (Keep your existing useEffect, fetchNovels, and handleDelete) ...
     // COPY PASTE your existing useEffect, fetchNovels, and handleDelete functions here
     useEffect(() => {
@@ -55,18 +58,22 @@ const NovelList = () => {
                             Read Now
                         </button>
 
-                        {/* Edit Button (Secondary Action) */}
-                        <button 
-                            onClick={() => navigate(`/edit/${novel._id}`)} 
-                            style={{ backgroundColor: '#eee', color: '#333', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}
-                        >
-                            Edit
-                        </button>
+                        {/* ADMIN BUTTONS (Visible only if Logged In) */}
+                        {token && (
+                            <>
+                                <button 
+                                    onClick={() => navigate(`/edit/${novel._id}`)} 
+                                    style={{ backgroundColor: '#eee', color: '#333', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer', marginRight: '10px' }}
+                                >
+                                    Edit
+                                </button>
 
-                        {/* Delete Button (Destructive Action) */}
-                        <button onClick={() => handleDelete(novel._id)} style={{ backgroundColor: 'transparent', color: '#ff4d4d', border: '1px solid #ff4d4d', padding: '7px 11px', borderRadius: '4px', cursor: 'pointer' }}>
-                            Delete
-                        </button>
+                                {/* Delete Button (Destructive Action) */}
+                                <button onClick={() => handleDelete(novel._id)} style={{ backgroundColor: 'transparent', color: '#ff4d4d', border: '1px solid #ff4d4d', padding: '7px 11px', borderRadius: '4px', cursor: 'pointer' }}>
+                                    Delete
+                                </button>
+                            </>
+                        )}
                     </div>
                 </div>
             ))}

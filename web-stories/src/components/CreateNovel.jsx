@@ -10,6 +10,14 @@ const CreateNovel = () => {
 
     const isEditMode = Boolean(id); // true if we have an ID
 
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            alert("You must be logged in to write a story!");
+            navigate('/login');
+        }
+    }, [navigate]);
+
     // Fetch data ONLY if we are editing
     useEffect(() => {
         if (isEditMode) {
@@ -21,7 +29,7 @@ const CreateNovel = () => {
                 })
                 .catch(err => console.error("Error loading novel:", err));
         }
-    }, [id]);
+    }, [id, isEditMode]);
 
     const handleSubmit = async (event) => {
         event.preventDefault();
