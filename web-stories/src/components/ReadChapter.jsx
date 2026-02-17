@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import DOMPurify from 'dompurify'; // 1. Import Sanitizer
+import DOMPurify from 'dompurify'; // Security import
 import CommentsSection from './CommentsSection';
 
 const ReadChapter = () => {
@@ -13,6 +13,7 @@ const ReadChapter = () => {
             .then(res => res.json())
             .then(data => {
                 setChapter(data);
+                // View tracking logic
                 if (data.book?._id && !hasCountedView.current) {
                     fetch(`http://localhost:5000/api/books/${data.book._id}/view`, { method: 'POST' });
                     hasCountedView.current = true;
@@ -23,9 +24,9 @@ const ReadChapter = () => {
         return () => { hasCountedView.current = false; };
     }, [id]);
 
-    if (!chapter) return <div className="container text-center mt-4">Loading...</div>;
+    if (!chapter) return <div className="container text-center mt-4">Loading Story...</div>;
 
-    // 2. Clean the content before rendering
+    // Clean the HTML content before rendering for security
     const cleanHTML = DOMPurify.sanitize(chapter.content);
 
     return (
@@ -39,7 +40,7 @@ const ReadChapter = () => {
                     {chapter.title}
                 </h1>
                 
-                {/* 3. Render the CLEANED HTML */}
+                {/* Render the sanitized HTML */}
                 <div 
                     className="story-content"
                     style={{ fontSize: '1.25rem', lineHeight: '1.8', fontFamily: 'Georgia, serif', color: '#c9d1d9', marginTop: '30px' }}

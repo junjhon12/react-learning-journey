@@ -22,7 +22,7 @@ const CommentsSection = ({ chapterId }) => {
             alert("Please login to comment!");
             return;
         }
-
+        console.log("Submitting comment for Chapter ID:", chapterId);
         try {
             const response = await fetch(`http://localhost:5000/api/chapters/${chapterId}/comments`, {
                 method: 'POST',

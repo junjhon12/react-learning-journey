@@ -23,6 +23,7 @@ const UserProfile = () => {
     }, [userId]);
 
     if (!user) return <div className="container text-center mt-4">Loading Profile...</div>;
+    if (!user._id) return <div className="container text-center mt-4">User not found.</div>;
 
     return (
         <div className="container" style={{ maxWidth: '800px' }}>

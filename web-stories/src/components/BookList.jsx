@@ -7,15 +7,16 @@ const BookList = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        // Fetch all books for the library view
         fetch('http://localhost:5000/api/books')
             .then(res => res.json())
             .then(data => setBooks(data))
             .catch(err => console.error("Error fetching books:", err));
     }, []);
 
-    // Sort logic
+    // Sorting logic for the library
     const sortedBooks = [...books].sort((a, b) => {
-        if (sortBy === 'popular') return b.views - a.views;
+        if (sortBy === 'popular') return (b.views || 0) - (a.views || 0);
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
