@@ -5,10 +5,12 @@ const Navbar = () => {
     const navigate = useNavigate();
     const token = localStorage.getItem('token');
     const username = localStorage.getItem('username');
+    const userId = localStorage.getItem('userId'); // <--- 1. ADD THIS LINE
 
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('username');
+        localStorage.removeItem('userId');
         alert("Logged out!");
         navigate('/login');
         window.location.reload();
@@ -26,7 +28,10 @@ const Navbar = () => {
                         <>
                             <Link to="/create" className="nav-item">Write</Link>
                             <Link to="/bookshelf" className="nav-item">Bookshelf</Link>
-                            <Link to="/${userId}" className="nav-item">User Profile</Link>
+                            
+                            {/* 2. FIXED LINK: Added /profile/ and used Backticks */}
+                            <Link to={`/profile/${userId}`} className="nav-item">My Profile</Link>
+                            
                             <span className="user-badge">{username}</span>
                             <button onClick={handleLogout} className="btn btn-danger" style={{marginLeft: '10px'}}>Logout</button>
                         </>
@@ -39,12 +44,11 @@ const Navbar = () => {
                 </div>
             </div>
             
-            {/* Styles specific to Navbar */}
             <style>{`
                 .navbar { background-color: var(--bg-card); border-bottom: 1px solid var(--border-color); padding: 10px 0; }
                 .logo { font-size: 1.5rem; font-weight: bold; color: #fff; text-decoration: none; }
                 .nav-links { display: flex; align-items: center; gap: 20px; }
-                .nav-item { color: var(--text-muted); font-weight: 500; }
+                .nav-item { color: var(--text-muted); font-weight: 500; text-decoration: none; }
                 .nav-item:hover { color: var(--text-main); }
                 .user-badge { background: #21262d; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; border: 1px solid var(--border-color); }
             `}</style>
