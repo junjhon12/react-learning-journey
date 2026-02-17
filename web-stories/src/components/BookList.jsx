@@ -1,74 +1,55 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState, useRef } from 'react'; // 1. Add useRef
+import { useParams, Link } from 'react-router-dom';
+import CommentsSection from './CommentsSection';
 
-const BookList = () => {
-    const [books, setBooks] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const navigate = useNavigate();
+const ReadChapter = () => {
+    const { id } = useParams(); 
+    const [chapter, setChapter] = useState(null);
+    const hasCountedView = useRef(false); // 2. Create the guard
 
     useEffect(() => {
-        fetch('http://localhost:5000/api/books')
+        fetch(`http://localhost:5000/api/chapters/${id}`)
             .then(res => res.json())
-            .then(data => setBooks(data))
-            .catch(err => console.error("Error:", err));
-    }, []);
+            .then(data => {
+                setChapter(data);
+                
+                // 3. Only count the view if we haven't already for this ID
+                if (data.book?._id && !hasCountedView.current) {
+                    fetch(`http://localhost:5000/api/books/${data.book._id}/view`, { method: 'POST' });
+                    hasCountedView.current = true; // Set guard to true
+                }
+            })
+            .catch(err => console.error("Error loading chapter:", err));
 
-    const filteredBooks = books.filter(book => {
-        const lowerTerm = searchTerm.toLowerCase();
-        const titleMatch = book.title.toLowerCase().includes(lowerTerm);
-        const authorMatch = book.author && book.author.username.toLowerCase().includes(lowerTerm);
-        return titleMatch || authorMatch;
-    });
+        // Reset the guard if the user switches to a DIFFERENT chapter
+        return () => {
+            hasCountedView.current = false;
+        };
+    }, [id]);
+
+    if (!chapter) return <div className="container text-center mt-4">Loading...</div>;
 
     return (
-        <div className="container">
-            <div className="flex-between mb-4">
-                <h2>📚 Library</h2>
-                <span className="text-muted">{filteredBooks.length} Books</span>
+        <div className="container" style={{ maxWidth: '800px', padding: '40px 20px' }}>
+            <div className="card">
+                <Link to={`/books/${chapter.book?._id}`} className="text-muted" style={{ fontSize: '0.9rem' }}>
+                    ← Back to Table of Contents
+                </Link>
+
+                <h1 style={{ textAlign: 'center', fontSize: '3rem', marginTop: '20px', fontFamily: 'Georgia, serif', borderBottom: '1px solid #30363d', paddingBottom: '20px' }}>
+                    {chapter.title}
+                </h1>
+                
+                <div 
+                    className="story-content"
+                    style={{ fontSize: '1.25rem', lineHeight: '1.8', fontFamily: 'Georgia, serif', color: '#c9d1d9', marginTop: '30px' }}
+                    dangerouslySetInnerHTML={{ __html: chapter.content }} 
+                />
             </div>
-            
-            <input 
-                type="text" 
-                placeholder="🔍 Search by Title or Author..." 
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ padding: '15px', borderRadius: '30px', marginBottom: '30px' }} 
-            />
 
-            <div className="grid">
-                {filteredBooks.length > 0 ? (
-                    filteredBooks.map((book) => (
-                        <div key={book._id} className="card">
-                            <h3 style={{ fontSize: '1.2rem', marginBottom: '5px' }}>{book.title}</h3>
-                            
-                            <div className="text-muted mb-4">
-                                By{' '}
-                                {book.author ? (
-                                    <Link to={`/profile/${book.author._id}`}>{book.author.username}</Link>
-                                ) : "Unknown"}
-                            </div>
-
-                            <p style={{ fontSize: '0.9rem', color: '#8b949e', height: '60px', overflow: 'hidden' }}>
-                                {book.description || "No description available."}
-                            </p>
-
-                            <button 
-                                onClick={() => navigate(`/books/${book._id}`)} 
-                                className="btn btn-primary btn-block"
-                            >
-                                Read Now
-                            </button>
-                        </div>
-                    ))
-                ) : (
-                    <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '40px' }}>
-                        <h3>No books found 🕵️‍♂️</h3>
-                        <p className="text-muted">Try a different search term.</p>
-                    </div>
-                )}
-            </div>
+            <CommentsSection chapterId={id} />
         </div>
     );
 };
 
-export default BookList;
+export default ReadChapter;

@@ -28,6 +28,7 @@ const bookSchema = new mongoose.Schema({
     title: { type: String, required: true },
     description: { type: String }, 
     author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    views: { type: Number, default: 0 }, // <--- ADD THIS
     createdAt: { type: Date, default: Date.now }
 });
 const Book = mongoose.model('Book', bookSchema);
@@ -274,6 +275,15 @@ app.get('/api/bookshelf', authenticateToken, async (req, res) => {
         });
         res.json(user.savedBooks);
     } catch (error) { res.status(500).json({ message: "Error fetching bookshelf" }); }
+});
+
+// Increment Book Views
+app.post('/api/books/:id/view', async (req, res) => {
+    try {
+        // Use $inc: { views: 1 } to add exactly one
+        await Book.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
+        res.json({ message: "View counted" });
+    } catch (error) { res.status(500).json({ message: "Error" }); }
 });
 
 app.listen(5000, () => console.log("Server running on port 5000"));

@@ -26,6 +26,7 @@ const Navbar = () => {
                         <>
                             <Link to="/create" className="nav-item">Write</Link>
                             <Link to="/bookshelf" className="nav-item">Bookshelf</Link>
+                            <Link to="/${userId}" className="nav-item">User Profile</Link>
                             <span className="user-badge">{username}</span>
                             <button onClick={handleLogout} className="btn btn-danger" style={{marginLeft: '10px'}}>Logout</button>
                         </>

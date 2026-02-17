@@ -1,16 +1,30 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react'; // 1. Added useRef
 import { useParams, Link } from 'react-router-dom';
 import CommentsSection from './CommentsSection';
 
 const ReadChapter = () => {
     const { id } = useParams(); 
     const [chapter, setChapter] = useState(null);
+    const hasCountedView = useRef(false); // 2. Create the guard
 
     useEffect(() => {
         fetch(`http://localhost:5000/api/chapters/${id}`)
             .then(res => res.json())
-            .then(data => setChapter(data))
+            .then(data => {
+                setChapter(data);
+                
+                // 3. Only count the view if we haven't already for THIS chapter load
+                if (data.book?._id && !hasCountedView.current) {
+                    fetch(`http://localhost:5000/api/books/${data.book._id}/view`, { method: 'POST' });
+                    hasCountedView.current = true; // Set guard to true
+                }
+            })
             .catch(err => console.error("Error loading chapter:", err));
+
+        // Reset the guard if the user switches to a DIFFERENT chapter
+        return () => {
+            hasCountedView.current = false;
+        };
     }, [id]);
 
     if (!chapter) return <div className="container text-center mt-4">Loading...</div>;
@@ -26,9 +40,6 @@ const ReadChapter = () => {
                     {chapter.title}
                 </h1>
                 
-                {/* IMPORTANT: We use 'dangerouslySetInnerHTML' so the 
-                   <b>Bold</b> and <i>Italics</i> actually show up!
-                */}
                 <div 
                     className="story-content"
                     style={{ fontSize: '1.25rem', lineHeight: '1.8', fontFamily: 'Georgia, serif', color: '#c9d1d9', marginTop: '30px' }}
