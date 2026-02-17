@@ -8,6 +8,7 @@ import CreateBook from './components/CreateBook'; // NEW
 import BookDetail from './components/BookDetail';
 import WriteChapter from './components/WriteChapter';
 import ReadChapter from './components/ReadChapter';
+import UserProfile from './components/UserProfile';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
           <Route path="/read/:id" element={<ReadChapter />} />
           <Route path="/books/:bookId/new-chapter" element={<WriteChapter />} />
           <Route path="/books/:bookId/new-chapter" element={<WriteChapter />} />
+          <Route path="/profile/:userId" element={<UserProfile />} />
         </Routes>
       </div>
     </div>

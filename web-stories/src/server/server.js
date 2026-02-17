@@ -89,10 +89,15 @@ app.post('/api/auth/login', async (req, res) => {
 
 // --- BOOK ROUTES ---
 
-// GET All Books (Library)
+// GET All Books (with optional Author filter)
 app.get('/api/books', async (req, res) => {
-    const books = await Book.find().populate('author', 'username');
-    res.json(books);
+    try {
+        const { author } = req.query; // Look for ?author=ID in the URL
+        const filter = author ? { author } : {}; // If author exists, filter by it. If not, get all.
+        
+        const books = await Book.find(filter).populate('author', 'username');
+        res.json(books);
+    } catch (error) { res.status(500).json({ message: "Error fetching books" }); }
 });
 
 // GET One Book (Table of Contents)
@@ -223,6 +228,16 @@ app.delete('/api/comments/:id', authenticateToken, async (req, res) => {
         await Comment.findByIdAndDelete(req.params.id);
         res.json({ message: "Comment deleted" });
     } catch (error) { res.status(500).json({ message: "Error deleting comment" }); }
+});
+
+// GET Public User Profile
+app.get('/api/users/:id', async (req, res) => {
+    try {
+        // Find user but DO NOT return the password
+        const user = await User.findById(req.params.id).select('-password');
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json(user);
+    } catch (error) { res.status(500).json({ message: "Error fetching user" }); }
 });
 
 app.listen(5000, () => console.log("Server running on port 5000"));
