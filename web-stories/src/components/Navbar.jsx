@@ -23,7 +23,8 @@ const Navbar = () => {
                 {/* Show different links based on login status */}
                 {token ? (
                     <>
-                        <Link to="/create" style={styles.link}>Write Novel</Link>
+                        // Inside Navbar.jsx
+                        <Link to="/create" style={styles.link}>Create Book</Link>
                         <span style={{color: '#aaa', marginLeft: '10px'}}>Hello, {username}</span>
                         <button onClick={handleLogout} style={styles.logoutBtn}>Logout</button>
                     </>
