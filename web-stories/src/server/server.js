@@ -6,7 +6,9 @@ import cors from 'cors';
 import mongoose from 'mongoose';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import { GoogleGenerativeAI } from "@google/generative-ai"; 
 
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -284,6 +286,65 @@ app.post('/api/books/:id/view', async (req, res) => {
         await Book.findByIdAndUpdate(req.params.id, { $inc: { views: 1 } });
         res.json({ message: "View counted" });
     } catch (error) { res.status(500).json({ message: "Error" }); }
+});
+
+// --- AI CRITIQUE ASSISTANT ---
+app.post('/api/ai/critique', authenticateToken, async (req, res) => {
+    const { content, bookTitle } = req.body;
+
+    if (!content || content.length < 100) {
+        return res.status(400).json({ message: "Write at least 100 characters for a quality review!" });
+    }
+
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const prompt = `
+            You are a professional narrative editor. Analyze this chapter for a book titled "${bookTitle}".
+            
+            STRICT RULES:
+            - DO NOT rewrite or write any content for the user.
+            - Provide feedback, tips, and suggestions ONLY.
+            - Return the response as a JSON object.
+
+            ANALYSIS CRITERIA:
+            1. Grade (A through F) for each: Structure, Goal/Objective, Character Development/Motivation, Details/Setting, Dynamic Pacing, Connective Tissue, Resolution/Cliffhanger.
+            2. List any specific plot-holes or inconsistencies regarding story elements.
+            3. Provide 3 specific "Tips for Growth".
+
+            Return ONLY this JSON format:
+            {
+              "grades": {
+                "structure": "Grade",
+                "goal": "Grade",
+                "characters": "Grade",
+                "details": "Grade",
+                "pacing": "Grade",
+                "connective": "Grade",
+                "resolution": "Grade"
+              },
+              "plotHoles": ["string"],
+              "tips": ["string"]
+            }
+
+            CHAPTER CONTENT:
+            ${content.replace(/<[^>]*>?/gm, '')} 
+        `;
+
+        const result = await model.generateContent(prompt);
+        const responseText = result.response.text();
+        
+        // Extract JSON from the AI response
+        const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            res.json(JSON.parse(jsonMatch[0]));
+        } else {
+            throw new Error("Invalid AI format");
+        }
+    } catch (error) {
+        console.error("AI Error:", error);
+        res.status(500).json({ message: "The assistant is currently unavailable." });
+    }
 });
 
 app.listen(5000, () => console.log("Server running on port 5000"));
