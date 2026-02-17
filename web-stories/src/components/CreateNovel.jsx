@@ -5,20 +5,20 @@ const CreateNovel = () => {
     const [title, setTitle] = useState('');
     const [chapter, setChapter] = useState('');
     
-    const { id } = useParams(); // Get ID from URL
-    const navigate = useNavigate(); // Tool to change pages
+    const { id } = useParams();
+    const navigate = useNavigate();
+    const isEditMode = Boolean(id);
 
-    const isEditMode = Boolean(id); // true if we have an ID
-
+    // 1. Redirect if not logged in
     useEffect(() => {
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('token'); // Fixed typo here
         if (!token) {
             alert("You must be logged in to write a story!");
             navigate('/login');
         }
     }, [navigate]);
 
-    // Fetch data ONLY if we are editing
+    // 2. Fetch data if editing
     useEffect(() => {
         if (isEditMode) {
             fetch(`http://localhost:5000/api/novels/${id}`)
@@ -41,15 +41,24 @@ const CreateNovel = () => {
             
         const method = isEditMode ? 'PUT' : 'POST';
 
+        // 3. Get token inside the function
+        const token = localStorage.getItem('token');
+
         try {
             const response = await fetch(url, {
                 method: method,
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` 
+                },
                 body: JSON.stringify(novelData),
             });
 
             if (response.ok) {
-                navigate('/'); // Go back to Library
+                alert(isEditMode ? "Novel Updated!" : "Novel Created!");
+                navigate('/'); 
+            } else {
+                alert("Failed to save. Are you logged in?");
             }
         } catch (error) {
             console.error("Error:", error);

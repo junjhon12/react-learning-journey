@@ -18,13 +18,14 @@ const Login = () => {
             const data = await response.json();
 
             if (response.ok) {
-                // SAVE THE TOKEN! This is the most important part.
+                // SAVE ALL 3 PIECES OF DATA
                 localStorage.setItem('token', data.token);
                 localStorage.setItem('username', data.username);
+                localStorage.setItem('userId', data.userId); // <--- THIS IS CRITICAL
                 
                 alert("Login Successful!");
-                navigate('/'); // Go to Home Page
-                window.location.reload(); // Refresh to update Navbar (we will fix this later)
+                navigate('/'); 
+                window.location.reload(); 
             } else {
                 alert(data.message);
             }

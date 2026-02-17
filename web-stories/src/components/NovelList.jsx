@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // 1. Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
 const NovelList = () => {
     const [novels, setNovels] = useState([]);
-    const navigate = useNavigate(); // 2. Initialize hook
+    const navigate = useNavigate();
 
-    // Check if user is logged in
+    const currentUserId = localStorage.getItem('userId'); // Get My ID
     const token = localStorage.getItem('token');
 
-    // ... (Keep your existing useEffect, fetchNovels, and handleDelete) ...
-    // COPY PASTE your existing useEffect, fetchNovels, and handleDelete functions here
     useEffect(() => {
         fetch('http://localhost:5000/api/novels')
             .then(res => res.json())
@@ -18,10 +16,19 @@ const NovelList = () => {
     }, []);
 
     const handleDelete = async (id) => {
-        if(!window.confirm("Delete this novel?")) return;
+        if(!window.confirm("Are you sure?")) return;
+        
         try {
-            await fetch(`http://localhost:5000/api/novels/${id}`, { method: 'DELETE' });
-            setNovels(novels.filter(n => n._id !== id));
+            const response = await fetch(`http://localhost:5000/api/novels/${id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (response.ok) {
+                setNovels(novels.filter(n => n._id !== id));
+            } else {
+                alert("You are not allowed to delete this novel.");
+            }
         } catch (err) { console.error(err); }
     };
 
@@ -29,37 +36,29 @@ const NovelList = () => {
         <div style={{ maxWidth: '600px', margin: '0 auto' }}>
             <h2>📚 Novel Library</h2>
             {novels.map((novel) => (
-                // ... inside your map function ...
-
                 <div key={novel._id} style={{ border: '1px solid #ddd', padding: '15px', marginBottom: '15px', borderRadius: '8px', position: 'relative' }}>
                     
-                    <h3 style={{ margin: '0 0 10px 0' }}>{novel.title}</h3>
+                    <h3 style={{ margin: '0 0 5px 0' }}>{novel.title}</h3>
                     
-                    {/* Preview Text */}
+                    {/* Show Author Name */}
+                    <small style={{display:'block', color:'#888', marginBottom:'10px'}}>
+                        By: {novel.author ? novel.author.username : "Unknown"}
+                    </small>
+
                     <p style={{ color: '#666', fontSize: '0.9rem' }}>
                         {novel.chapter.substring(0, 100)}...
                     </p>
 
                     <div style={{ marginTop: '15px' }}>
-                        {/* NEW: Read Button (Primary Action) */}
                         <button 
                             onClick={() => navigate(`/read/${novel._id}`)} 
-                            style={{ 
-                                backgroundColor: '#007bff', 
-                                color: 'white', 
-                                border: 'none', 
-                                padding: '8px 16px', 
-                                borderRadius: '4px', 
-                                cursor: 'pointer',
-                                marginRight: '10px',
-                                fontWeight: 'bold'
-                            }}
+                            style={{ backgroundColor: '#007bff', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '4px', cursor: 'pointer', marginRight: '10px', fontWeight: 'bold' }}
                         >
                             Read Now
                         </button>
 
-                        {/* ADMIN BUTTONS (Visible only if Logged In) */}
-                        {token && (
+                        {/* ONLY SHOW BUTTONS IF YOU ARE THE OWNER */}
+                        {novel.author && novel.author._id === currentUserId && (
                             <>
                                 <button 
                                     onClick={() => navigate(`/edit/${novel._id}`)} 
@@ -68,7 +67,6 @@ const NovelList = () => {
                                     Edit
                                 </button>
 
-                                {/* Delete Button (Destructive Action) */}
                                 <button onClick={() => handleDelete(novel._id)} style={{ backgroundColor: 'transparent', color: '#ff4d4d', border: '1px solid #ff4d4d', padding: '7px 11px', borderRadius: '4px', cursor: 'pointer' }}>
                                     Delete
                                 </button>
