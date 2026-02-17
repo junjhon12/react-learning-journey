@@ -20,7 +20,7 @@ const BookList = () => {
         return new Date(b.createdAt) - new Date(a.createdAt);
     });
 
-    if (!books.length) return <div className="container text-center mt-4">No stories found. Be the first to write one!</div>;
+    if (books.length === 0) return <div className="spinner"></div>;
 
     return (
         <div className="container">

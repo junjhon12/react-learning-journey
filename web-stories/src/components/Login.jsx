@@ -42,6 +42,17 @@ const Login = () => {
                         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Enter your password" />
                     </div>
                     <button type="submit" className="btn btn-primary btn-block">Login</button>
+                    <button 
+                        type="button" 
+                        onClick={() => {
+                            setUsername("GuestUser"); // Make sure you register this user manually once!
+                            setPassword("guest123");
+                        }}
+                        className="btn btn-secondary btn-block"
+                        style={{ marginTop: '10px', background: '#6c757d', border: 'none' }}
+                    >
+                        🔑 Login as Guest (Demo)
+                    </button>
                 </form>
                 <p className="text-muted" style={{ textAlign: 'center', marginTop: '20px' }}>
                     New here? <Link to="/register">Create an account</Link>
